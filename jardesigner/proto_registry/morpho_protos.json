@@ -1,0 +1,104 @@
+{
+  "type": "morpho",
+  "items": [
+    {
+      "id": "h10_CA1",
+      "name": "h10 CA1 Pyramidal",
+      "source": "NeuroMorpho.org",
+      "description": "CA1 hippocampal pyramidal cell reconstruction",
+      "topTen": true,
+      "source_type": "file",
+      "file_type": "swc",
+      "server_file": "CELL_MODELS/h10.CNG.swc",
+      "details": {
+        "full_description": "Reconstructed CA1 hippocampal pyramidal cell morphology from NeuroMorpho.org (CNG standardized format).",
+        "references": [
+          { "text": "NeuroMorpho.org — h10.CNG.swc", "url": "https://neuromorpho.org" }
+        ]
+      }
+    },
+    {
+      "id": "mitral_cell",
+      "name": "Mitral Cell",
+      "source": "NeuroMorpho.org",
+      "description": "Olfactory bulb mitral cell (Genesis .p format)",
+      "topTen": true,
+      "source_type": "file",
+      "file_type": "p",
+      "server_file": "CELL_MODELS/mit.p",
+      "details": {
+        "full_description": "Olfactory bulb mitral cell morphology in Genesis .p format."
+      }
+    },
+    {
+      "id": "axon",
+      "name": "Axon",
+      "source": "jardesignerProtos",
+      "description": "Unmyelinated axon, spiral trajectory (200 segments)",
+      "topTen": true,
+      "source_type": "file",
+      "file_type": "swc",
+      "server_file": "CELL_MODELS/axon.swc",
+      "details": {
+        "full_description": "Unmyelinated axon with soma and 200 axon compartments following a spiral trajectory. Diameter 2 µm, compartment length 10 µm. Generated from make_axon() in jardesignerProtos.py."
+      }
+    },
+    {
+      "id": "myelinated_axon",
+      "name": "Myelinated Axon",
+      "source": "jardesignerProtos",
+      "description": "Myelinated axon with nodes of Ranvier (405 segments)",
+      "topTen": true,
+      "source_type": "file",
+      "file_type": "swc",
+      "server_file": "CELL_MODELS/myelinated_axon.swc",
+      "details": {
+        "full_description": "Myelinated axon with 405 compartments on a spiral trajectory. Nodes of Ranvier every 100 segments (diameter 1 µm); myelinated internodes diameter 2 µm. Generated from make_myelinated_axon() in jardesignerProtos.py."
+      }
+    },
+    {
+      "id": "SCA6_P13_C7",
+      "name": "SCA6 P13 C7 Purkinje",
+      "source": "NeuroMorpho.org",
+      "description": "Purkinje cell from SCA6 mouse model (P13)",
+      "topTen": true,
+      "source_type": "file",
+      "file_type": "swc",
+      "server_file": "CELL_MODELS/SCA6_P13_C7.CNG.swc",
+      "details": {}
+    },
+    {
+      "id": "PZ_Adult1_2",
+      "name": "PZ Adult Purkinje",
+      "source": "NeuroMorpho.org",
+      "description": "Adult Purkinje cell morphology (PZ_Adult1-2)",
+      "topTen": true,
+      "source_type": "file",
+      "file_type": "swc",
+      "server_file": "CELL_MODELS/PZ_Adult1-2.CNG.swc",
+      "details": {}
+    },
+    {
+      "id": "fs_basket",
+      "name": "FS Basket Cell",
+      "source": "NeuroMorpho.org",
+      "description": "Fast-spiking basket interneuron",
+      "topTen": false,
+      "source_type": "file",
+      "file_type": "swc",
+      "server_file": "CELL_MODELS/fs-basket-cell-02-10-08-2.CNG.swc",
+      "details": {}
+    },
+    {
+      "id": "mouse_CA2",
+      "name": "Mouse CA2 Pyramidal",
+      "source": "NeuroMorpho.org",
+      "description": "Mouse hippocampal CA2 pyramidal cell",
+      "topTen": false,
+      "source_type": "file",
+      "file_type": "swc",
+      "server_file": "CELL_MODELS/Mouse-CA2-Mc-Pyramidal-Cell.CNG.swc",
+      "details": {}
+    }
+  ]
+}
