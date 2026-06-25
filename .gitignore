@@ -1,2 +1,4 @@
 jardesigner/user_uploads/
 data/
+**/__pycache__/
+**/*.pyc
