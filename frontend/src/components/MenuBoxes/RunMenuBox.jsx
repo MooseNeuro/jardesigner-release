@@ -51,13 +51,10 @@ const RunMenuBox = ({
     setRunParameters,
     currentConfig,
     onStartRun,
-    onPauseRun,       // Pause handler
-    onResumeRun,      // Resume handler
     onResetRun,
     onBuildAndStartRun,
     onStopRun,
     isSimulating,
-    isPaused,         // Pause state
     activeSimPid,
     liveFrameData,
     isReplaying,
@@ -89,26 +86,16 @@ const RunMenuBox = ({
     const [currentTime, setCurrentTime] = useState(0.0);
     const [statusMessage, setStatusMessage] = useState({ type: '', text: '' });
 
-    // Compute button text based on state
-    const startButtonText = isSimulating 
-        ? 'Running...' 
-        : isPaused 
-            ? 'Continue' 
-            : currentTime > 0 
-                ? 'Continue' 
-                : 'Start';
-
     const onConfigurationChangeRef = useRef(onConfigurationChange);
     useEffect(() => { onConfigurationChangeRef.current = onConfigurationChange; }, [onConfigurationChange]);
 
     // Saves elecPlotDt, funcDt, and per-drawable moogli dt before turnOffElec overrides them
     const savedDtsRef = useRef(null);
-    
+
+
     useEffect(() => {
         if (isReplaying) {
             setStatusMessage({ type: 'info', text: 'Replaying simulation in 3D viewer...' });
-        } else if (isPaused) {
-            setStatusMessage({ type: 'warning', text: `Simulation paused. Click Continue to resume.` });
         } else if (isSimulating) {
             setStatusMessage({ type: 'info', text: `Simulation running (PID: ${activeSimPid})...` });
         } else if (activeSimPid) {
@@ -116,14 +103,18 @@ const RunMenuBox = ({
         } else {
             setStatusMessage({ type: 'info', text: 'No active simulation. Change a setting to build the model.' });
         }
-    }, [isSimulating, isReplaying, isPaused, activeSimPid, currentTime]);
+    }, [isSimulating, isReplaying, activeSimPid, currentTime]);
 
-	useEffect(() => {
-    	const frameForRunView = liveFrameData?.run;
-    	if (frameForRunView && typeof frameForRunView.timestamp === 'number') {
-        	setCurrentTime(frameForRunView.timestamp);
-    	}
-	}, [liveFrameData]);
+    useEffect(() => {
+        const frameForRunView = liveFrameData?.run;
+        if (frameForRunView && typeof frameForRunView.timestamp === 'number') {
+            setCurrentTime(frameForRunView.timestamp);
+        }
+    }, [liveFrameData]);
+
+    useEffect(() => {
+        setCurrentTime(0.0);
+    }, [activeSimPid]);
 
     const handleRuntimeChange = (value) => setRuntime(value);
     const updateClock = (field, value) => setClocks((prev) => ({ ...prev, [field]: value }));
@@ -218,6 +209,7 @@ const RunMenuBox = ({
     // Save config to parent only when this menu box is closed (unmounted).
     // Empty dep array: the cleanup only runs on unmount, not on every local state change.
     // buildConfigPayloadRef ensures we always call the latest version on unmount.
+
     useEffect(() => {
         return () => {
             if (onConfigurationChangeRef.current) {
@@ -227,12 +219,6 @@ const RunMenuBox = ({
     }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
     const handleStart = () => {
-        // If paused, resume instead of starting fresh
-        if (isPaused && onResumeRun) {
-            onResumeRun();
-            return;
-        }
-
         const latestConfig = buildConfigPayload();
         if (currentTime === 0) {
             // New start: delegate to parent which decides if rebuild is needed.
@@ -262,6 +248,8 @@ const RunMenuBox = ({
             onResetRun();
         }
     };
+
+    const startButtonText = currentTime > 0 ? 'Continue' : 'Start';
 
     return (
         <Box sx={{ p: 2, background: '#f5f5f5', borderRadius: 2 }}>

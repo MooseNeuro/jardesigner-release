@@ -14,7 +14,7 @@ import mooseLogo from '../../assets/moose_logo.png';
 const API_BASE_URL = `http://${window.location.hostname}:5000`;
 const MOOSE_VERSION = '4.2.0 "Kalakand"';
 
-const FileMenuBox = ({ setJsonContent, currentConfig, getCurrentJsonData, clientId, onMissingFilesWarned }) => {
+const FileMenuBox = ({ setJsonContent, currentConfig, getCurrentJsonData, clientId, onMissingFilesWarned, updateJsonData }) => {
     // --- Metadata State ---
     const [creator, setCreator] = useState('');
     const [license, setLicense] = useState('CC BY');
@@ -25,11 +25,12 @@ const FileMenuBox = ({ setJsonContent, currentConfig, getCurrentJsonData, client
     // --- Dialog State ---
     const [showAboutJardesigner, setShowAboutJardesigner] = useState(false);
     const [showAboutMoose, setShowAboutMoose] = useState(false);
-    const [mooseVersion, setMooseVersion] = useState(MOOSE_VERSION);
     const [missingFiles, setMissingFiles] = useState([]);
     const [showMissingFilesDialog, setShowMissingFilesDialog] = useState(false);
+    const [mooseVersion, setMooseVersion] = useState(MOOSE_VERSION);
 
     const loadInputRef = useRef();
+    const docInputRef = useRef();
 
 
     // --- Fetch latest MOOSE version from GitHub when dialog opens ---
@@ -139,6 +140,24 @@ const FileMenuBox = ({ setJsonContent, currentConfig, getCurrentJsonData, client
         } catch (err) {
             console.error('Error loading project:', err);
             alert(`Failed to load project: ${err.message}`);
+        }
+    };
+
+    const handleDocFileUpload = async (event) => {
+        const file = event.target.files[0];
+        if (!file || !clientId) return;
+        if (docInputRef.current) docInputRef.current.value = '';
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('clientId', clientId);
+        try {
+            const response = await fetch(`${API_BASE_URL}/upload_file`, { method: 'POST', body: formData });
+            if (!response.ok) throw new Error(await response.text());
+            const data = await response.json();
+            if (updateJsonData) updateJsonData({ docFile: data.filename });
+        } catch (err) {
+            console.error('Error uploading doc file:', err);
+            alert(`Failed to upload documentation file: ${err.message}`);
         }
     };
 
@@ -327,6 +346,18 @@ const FileMenuBox = ({ setJsonContent, currentConfig, getCurrentJsonData, client
                 <MenuButton label="Save Model" onClick={handleDownloadProject} />
                 <MenuButton label="Save Model JSON" onClick={handleSaveModel} />
                 <MenuButton label="Save Model History" onClick={handleDownloadProjectHistory} />
+
+                <Grid item xs={12}>
+                    <Button
+                        variant="contained"
+                        fullWidth
+                        sx={{ bgcolor: '#e0e0e0', color: 'black', justifyContent: 'flex-start', pl: 2, ':hover': { bgcolor: '#bdbdbd' } }}
+                        onClick={() => docInputRef.current?.click()}
+                    >
+                        Upload Model Documentation (.html)
+                    </Button>
+                    <input type="file" accept=".html" style={{ display: 'none' }} ref={docInputRef} onChange={handleDocFileUpload} />
+                </Grid>
             </Grid>
 
             <Divider sx={{ my: 2, borderBottomWidth: 2 }} />

@@ -23,6 +23,7 @@
 		"modelNotes": { "type": "string" },
 		"licence": { "type": "string", "default": "CC-BY" }
 	},
+	"docFile": { "type": "string", "default": "" },
 	"modelPath": { "type": "string", "default": "/model" },
 	"diffusionLength": { "type": "number", "minimum": 0, "default": 2e-6 },
 	"turnOffElec": { "type": "boolean", "default": false },

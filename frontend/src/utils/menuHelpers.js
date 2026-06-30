@@ -35,6 +35,10 @@ export const getCompartmentOptions = (simPaths = []) => {
     const soma = sortedPaths.find(p => p === 'soma' || p.endsWith('/soma'));
     if (soma) { result.push(soma); seen.add(soma); }
 
+    // 1b. All-compartments wildcard (only if not already in simPaths)
+    if (!sortedPaths.includes('#')) result.push('#');
+    seen.add('#');
+
     // 2. Wildcards — sorted so the order is deterministic
     const baseCounts = {};
     sortedPaths.forEach(p => {

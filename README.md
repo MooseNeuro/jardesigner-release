@@ -11,7 +11,7 @@
 [![GitHub issues](https://img.shields.io/github/issues/MooseNeuro/jardesigner)](https://github.com/MooseNeuro/jardesigner/issues)
 
 <p>
-  <a href="https://jardesigner.mooseneuro.org">🌐 Live App</a> &nbsp;|&nbsp;
+  <a href="https://www.jardesigner.org">🌐 Live App</a> &nbsp;|&nbsp;
   <a href="https://www.mooseneuro.org/docs/html/user/py/quickstart/qs_GUI.html">📖 Documentation</a> &nbsp;|&nbsp;
   <a href="https://pypi.org/project/pymoose/">🐍 PyMoose</a> &nbsp;|&nbsp;
   <a href="https://github.com/MooseNeuro/jardesigner/issues">🐛 Report a Bug</a> &nbsp;|&nbsp;
@@ -26,8 +26,7 @@ Jardesigner is a web-based GUI for building multiscale in neuroscience and syste
 
 ## Hosted Instance
 
-A live hosted version is available at [jardesigner.mooseneuro.org](https://jardesigner.mooseneuro.org) — no installation required. The server infrastructure is managed by the [jardesigner-server](https://github.com/MooseNeuro/jardesigner-server) repository.
-
+A live hosted version is available at [www.jardesigner.org](https://www.jardesigner.org) — no installation required.
 ## Documentation
 
 Full documentation including a GUI quickstart guide is available at [mooseneuro.org/docs/html/user/py/quickstart/qs_GUI.html](https://www.mooseneuro.org/docs/html/user/py/quickstart/qs_GUI.html).
@@ -38,31 +37,31 @@ Full documentation including a GUI quickstart guide is available at [mooseneuro.
 
 Jardesigner provides dedicated panels for each aspect of a neuronal model:
 
-- **Morphology** — import from SWC or NeuroML files, or build parametric single-compartment soma, ball-and-stick, or Y-branch models
-- **Passive Properties** — configure Rm, Cm, Ra, Em, and initial Vm per compartment path
-- **Ion Channels** — add voltage-gated and ligand-gated channels with placement rules across compartments
-- **Dendritic Spines** — define spine head/shaft geometry and placement rules along dendrites
-- **Chemical Models** — load reaction-diffusion networks from SBML or kkit (GENESIS-derived) format files
-- **Adaptors** — couple electrical and chemical compartments bidirectionally (e.g. Ca²⁺ influx driving downstream signaling)
-- **Stimuli** — apply current injection, voltage clamp, chemical field stimuli, or periodic/random synaptic inputs
-- **Plots** — select quantities to record: voltage, currents, channel conductances, ion concentrations, signaling molecule levels
+- **Morphology** - import from SWC or NeuroML files, or build parametric single-compartment soma, ball-and-stick, or Y-branch models
+- **Passive Properties** - configure Rm, Cm, Ra, Em, and initial Vm per compartment path
+- **Ion Channels** - add voltage-gated and ligand-gated channels with placement rules across compartments
+- **Dendritic Spines** - define spine head/shaft geometry and placement rules along dendrites
+- **Chemical Models** - load reaction-diffusion networks from SBML or kkit (GENESIS-derived) format files
+- **Adaptors** - couple electrical and chemical compartments bidirectionally (e.g. Ca²⁺ influx driving downstream signaling)
+- **Stimuli** - apply current injection, voltage clamp, chemical field stimuli, or periodic/random synaptic inputs
+- **Plots** - select quantities to record: voltage, currents, channel conductances, ion concentrations, signaling molecule levels
 
 ### Data Repository Integrations
 
 Jardesigner connects directly to two major neuroscience databases:
 
-- [NeuroMorpho.org](https://neuromorpho.org) — search and import reconstructed neuronal morphologies from the world's largest morphology repository
-- [Allen Brain Cell Types Database](https://celltypes.brain-map.org) — browse cell types and import morphologies directly into the model
+- [NeuroMorpho.org](https://neuromorpho.org) - search and import reconstructed neuronal morphologies from the world's largest morphology repository
+- [Allen Brain Cell Types Database](https://celltypes.brain-map.org) - browse cell types and import morphologies directly into the model
 
 ### Visualization
 
-- **3D Morphology Viewer** — interactive visualization of neuronal structure with simulation animation overlay
-- **Reaction Graph** — visualization of the loaded chemical reaction network
-- **Simulation Plots** — plots of all recorded quantities against time
+- **3D Morphology Viewer** - interactive visualization of neuronal structure with simulation animation overlay
+- **Reaction Graph** - visualization of the loaded chemical reaction network
+- **Simulation Plots** - plots of all recorded quantities against time
 
 ## Installation & Running Locally
 
-Jardesigner requires two terminals running simultaneously — one for the backend and one for the frontend.
+Jardesigner requires two terminals running simultaneously - one for the backend and one for the frontend.
 
 ### Step 1 — Clone the repository
 
@@ -129,4 +128,4 @@ Funded by [The Kavli Foundation](https://www.kavlifoundation.org/). Supported by
 ## License
 
 Jardesigner is available under the [GNU General Public License v3](LICENSE).
-Copyright (c) Upinder S. Bhalla, NCBS, Bangalore, 2025.
+Copyright (c) Upinder S. Bhalla, NCBS, Bangalore, 2026.

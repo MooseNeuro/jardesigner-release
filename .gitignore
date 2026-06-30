@@ -2,3 +2,7 @@ jardesigner/user_uploads/
 data/
 **/__pycache__/
 **/*.pyc
+
+# Ignore all OLD directories anywhere in the repo
+**/OLD/
+DOCUMENTATION

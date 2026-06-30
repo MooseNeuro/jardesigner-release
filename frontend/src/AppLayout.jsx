@@ -110,14 +110,11 @@ export const AppLayout = (props) => {
     getCurrentJsonData,
     getChemProtos,
     handleStartRun,
-    handlePauseRun,     // Pause handler
-    handleResumeRun,    // Resume handler
     handleResetRun,
     handleBuildAndStartRun,
     handleStopRun,
     setRunParameters,
     isSimulating,
-    isPaused,           // Pause state
     activeSim,
     liveFrameData,
     isReplaying,
@@ -132,6 +129,7 @@ export const AppLayout = (props) => {
     elecPaths,
     spinePaths,
     setWarnedAboutMissing,
+    handleLoadTutorial,
   } = props;
 
   // Extract channel names for use in Plots, Stimuli, and Adaptors.
@@ -151,7 +149,7 @@ export const AppLayout = (props) => {
   }, [jsonData.chanProto, threeDConfigs]);
 
   const menuComponents = useMemo(() => ({
-    File: <FileMenuBox setJsonContent={updateJsonString} onClearModel={handleClearModel} getCurrentJsonData={getCurrentJsonData} currentConfig={jsonData.fileinfo} clientId={clientId} onMissingFilesWarned={setWarnedAboutMissing} />,
+    File: <FileMenuBox setJsonContent={updateJsonString} onClearModel={handleClearModel} getCurrentJsonData={getCurrentJsonData} currentConfig={jsonData.fileinfo} clientId={clientId} onMissingFilesWarned={setWarnedAboutMissing} updateJsonData={updateJsonData} />,
     SimOutput: <SimOutputMenuBox 
         onConfigurationChange={updateJsonData} 
         currentConfig={jsonData.files} 
@@ -164,13 +162,10 @@ export const AppLayout = (props) => {
       setRunParameters={setRunParameters}
       currentConfig={{ ...jsonData }}
       onStartRun={handleStartRun}
-      onPauseRun={handlePauseRun}      // Pass pause handler
-      onResumeRun={handleResumeRun}    // Pass resume handler
       onResetRun={handleResetRun}
       onBuildAndStartRun={handleBuildAndStartRun}
       onStopRun={handleStopRun}
       isSimulating={isSimulating}
-      isPaused={isPaused}              // Pass pause state
       activeSimPid={activeSim.pid}
       liveFrameData={liveFrameData}
       isReplaying={isReplaying}
@@ -245,8 +240,8 @@ export const AppLayout = (props) => {
     />,
   }), [
     jsonData, updateJsonData, updateJsonString, handleClearModel, getCurrentJsonData, getChemProtos,
-    handleStartRun, handlePauseRun, handleResumeRun, handleResetRun,  // Added pause handlers
-    isSimulating, isPaused, activeSim.pid, liveFrameData, isReplaying,  // Added isPaused
+    handleStartRun, handleResetRun,
+    isSimulating, activeSim.pid, liveFrameData, isReplaying,
     handleMorphologyFileChange, 
     clientId,
     threeDConfigs,
@@ -320,6 +315,8 @@ export const AppLayout = (props) => {
         <Grid item xs={8} style={{ height: '100%' }}>
           <DisplayWindow
             {...props}
+            docFile={jsonData.docFile}
+            onLoadTutorial={handleLoadTutorial}
           />
         </Grid>
       </Grid>
