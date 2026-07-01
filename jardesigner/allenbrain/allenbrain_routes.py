@@ -4,6 +4,7 @@
 ##############################################
 import traceback
 from pathlib import Path
+import platformdirs
 
 from flask import Blueprint, jsonify, request
 
@@ -16,7 +17,7 @@ from .allenbrain import (
 
 allenbrain_routes = Blueprint("allenbrain", __name__)
 
-USER_UPLOADS_DIR = Path(__file__).resolve().parent.parent / "user_uploads"
+USER_UPLOADS_DIR = Path(platformdirs.user_data_dir("jardesigner")) / "user_uploads"
 
 
 @allenbrain_routes.route("/metadata", methods=["GET"])

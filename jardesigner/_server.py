@@ -1,9 +1,10 @@
-import eventlet
-eventlet.monkey_patch()
+from gevent import monkey
+monkey.patch_all()
+
 import os
-import sys
 import platformdirs
 import importlib.resources
+import sys
 import subprocess
 import json
 import uuid
@@ -21,6 +22,7 @@ from werkzeug.utils import secure_filename
 # --- Configuration ---
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 USER_UPLOADS_DIR = os.path.join(platformdirs.user_data_dir('jardesigner'), 'user_uploads')
+
 # Secret shared with simulation subprocesses; never exposed to clients.
 _INTERNAL_SECRET = secrets.token_hex(32)
 _LOOPBACK = {'127.0.0.1', '::1', '::ffff:127.0.0.1'}
@@ -33,7 +35,7 @@ app = Flask(__name__, static_folder=_STATIC_DIR, static_url_path='')
 CORS(app)
 
 # Quiet logging
-socketio = SocketIO(app, cors_allowed_origins="*", logger=False, engineio_logger=False)
+socketio = SocketIO(app, cors_allowed_origins="*", logger=False, engineio_logger=False, async_mode='gevent')
 
 from .neuromorpho.neuromorpho_routes import neuromorpho_routes, stage_neuron as _nm_stage
 from .neuromorpho.neuromorpho import search_neurons, fetch_neuron_by_id as _nm_fetch_by_id, neuron_to_item as _nm_to_item
@@ -114,7 +116,7 @@ def terminate_process(pid):
 _UPLOADS_REAL = os.path.realpath(USER_UPLOADS_DIR)
 
 # Extensions accepted for user-uploaded model files.
-_ALLOWED_UPLOAD_EXTENSIONS = {'.swc', '.p', '.g', '.xml', '.sbml', '.nml', '.json'}
+_ALLOWED_UPLOAD_EXTENSIONS = {'.swc', '.p', '.g', '.xml', '.sbml', '.nml', '.json', '.md', '.png', '.jpg', '.jpeg', '.svg', '.html'}
 
 def _is_safe_client_id(client_id):
     """Return True only if client_id resolves to a path within USER_UPLOADS_DIR."""
@@ -417,6 +419,7 @@ def launch_simulation():
     
     current_dir = os.path.dirname(os.path.abspath(__file__))
     launcher_path = os.path.join(BASE_DIR, '_launcher.py')
+
     worker_args = [
         config_file_path,
         "--plotFile", plot_filepath, 
@@ -436,7 +439,7 @@ def launch_simulation():
         
         process = subprocess.Popen(
             [sys.executable, '-m', 'jardesigner._launcher'] + worker_args,
-            cwd=os.path.dirname(BASE_DIR), 
+            cwd=os.path.dirname(BASE_DIR),
             stdin=subprocess.PIPE, 
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE, 
@@ -536,6 +539,8 @@ def _get_referenced_sources(parsed):
     for cp in parsed.get('chanProto', []):
         if cp.get('source'):
             sources.append(cp['source'])
+    if parsed.get('docFile'):
+        sources.append(parsed['docFile'])
     return sources
 
 
@@ -631,6 +636,58 @@ def upload_project(client_id):
 
     if json_content is None:
         return jsonify({'error': 'No jardesigner JSON file found in archive'}), 400
+
+    return jsonify({'status': 'success', 'json': json_content})
+
+
+EXAMPLES_DIR = os.path.join(BASE_DIR, 'EXAMPLES')
+
+
+@app.route('/examples', methods=['GET'])
+def list_examples():
+    index_path = os.path.join(EXAMPLES_DIR, 'index.json')
+    if not os.path.isfile(index_path):
+        return jsonify([])
+    with open(index_path, 'r') as f:
+        return jsonify(json.load(f))
+
+
+@app.route('/load_example/<client_id>/<name>', methods=['POST'])
+def load_example(client_id, name):
+    if not _is_safe_client_id(client_id):
+        return jsonify({'error': 'Invalid client ID'}), 400
+    safe_name = secure_filename(name)
+    archive_path = os.path.join(EXAMPLES_DIR, safe_name + '.jardes')
+    if not os.path.isfile(archive_path):
+        return jsonify({'error': f'Example "{name}" not found'}), 404
+
+    session_dir = os.path.join(USER_UPLOADS_DIR, client_id)
+    os.makedirs(session_dir, exist_ok=True)
+
+    try:
+        shutil.unpack_archive(archive_path, session_dir, format='zip')
+    except Exception as e:
+        return jsonify({'error': f'Failed to unpack example: {str(e)}'}), 400
+
+    json_path, _ = _get_newest_jardesigner_json(session_dir)
+    if not json_path:
+        return jsonify({'error': 'No jardesigner JSON found in example'}), 400
+
+    # Prefer <name>.json from the archive (same logic as upload_project)
+    json_content = None
+    preferred_path = os.path.join(session_dir, safe_name + '.json')
+    if os.path.isfile(preferred_path):
+        try:
+            with open(preferred_path, 'r') as f:
+                text = f.read()
+            if json.loads(text).get('filetype') == 'jardesigner':
+                json_content = text
+        except Exception:
+            pass
+
+    if json_content is None:
+        with open(json_path, 'r') as f:
+            json_content = f.read()
 
     return jsonify({'status': 'success', 'json': json_content})
 
@@ -755,7 +812,7 @@ def reset_simulation():
     else:
         return jsonify({"status": "error", "message": "Process ID not found for reset."}), 404
 
-#if __name__ == '__main__':
+if __name__ == '__main__':
     #print(f"User Uploads Directory (absolute): {os.path.abspath(USER_UPLOADS_DIR)}")
     #print("Starting Flask-SocketIO server...")
-   # socketio.run(app, host='0.0.0.0', debug=False, port=5000)
+    socketio.run(app, host='0.0.0.0', debug=False, port=5000)

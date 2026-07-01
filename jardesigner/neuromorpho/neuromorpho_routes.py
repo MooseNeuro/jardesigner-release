@@ -4,6 +4,7 @@
 import json
 import traceback
 from pathlib import Path
+import platformdirs
 
 from flask import Blueprint, jsonify, request
 
@@ -18,10 +19,10 @@ from .neuromorpho import (
 neuromorpho_routes = Blueprint("neuromorpho", __name__)
 
 # Cache directory for species metadata (shared across sessions)
-_CACHE_DIR = Path("data") / "neuromorpho"
+_CACHE_DIR = Path(platformdirs.user_data_dir("jardesigner")) / "data" / "neuromorpho"
 _CACHE_DIR.mkdir(parents=True, exist_ok=True)
 
-USER_UPLOADS_DIR = Path(__file__).resolve().parent.parent / "user_uploads"
+USER_UPLOADS_DIR = Path(platformdirs.user_data_dir("jardesigner")) / "user_uploads"
 
 
 # ---------------------------------------------------------------------------
