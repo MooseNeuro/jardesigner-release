@@ -47,7 +47,7 @@ const getChannelSourceString = (componentType) => {
 
 const prototypeTypeOptions = [
     'Na_HH', 'Na', 'KDR_HH', 'KDR', 'K_A', 'Ca', 'LCa', 'Ca_conc',
-    'K_AHP', 'K_C', 'gluR', 'NMDAR', 'GABAR', 'leak', 'File'
+    'K_AHP', 'K_C', 'gluR', 'NMDAR', 'GABAR', 'leak', 'File', 'icg'
 ];
 
 const safeToString = (value, defaultValue = '') => {
@@ -98,6 +98,8 @@ const ChanMenuBox = ({
             if (p.type === 'neuroml') {
                 componentType = 'File';
                 file = p.source || '';
+            } else if (p.type === 'icg') {
+                return { type: 'icg', name: p.name, file: '', source: p.source, manualName: true };
             }
             const matchingTypeOption = prototypeTypeOptions.find(opt => getChannelSourceString(opt) === p.source || opt === p.source);
             if (matchingTypeOption && p.type !== 'neuroml') {
@@ -158,6 +160,9 @@ const ChanMenuBox = ({
         let newProto;
         if (item.source_type === 'builtin') {
             newProto = { type: item.id, name: item.id, file: '', manualName: false };
+        } else if (item.suffix != null && item.modeldb_id != null) {
+            const name = item.staged_filename || `${item.suffix}_${item.modeldb_id}`;
+            newProto = { type: 'icg', name, file: '', source: name, manualName: false };
         } else if (item.source_type === 'neuroml' || (item.source_type === 'file' && item.staged_filename)) {
             newProto = { type: 'File', name: item.name, file: item.staged_filename || '', manualName: true };
         }
@@ -279,6 +284,9 @@ const ChanMenuBox = ({
                 if (protoState.type === 'File') {
                     schemaType = "neuroml";
                     schemaSource = protoState.file || "";
+                } else if (protoState.type === 'icg') {
+                    schemaType = "icg";
+                    schemaSource = protoState.source || protoState.name;
                 } else {
                     schemaSource = getChannelSourceString(protoState.type);
                 }
@@ -376,6 +384,19 @@ const ChanMenuBox = ({
                                         <IconButton size="small"><InfoOutlinedIcon fontSize="small" /></IconButton>
                                     </Tooltip>
                                 </Box>
+                            </Grid>
+                        )}
+                        {prototypes[activePrototype].type === 'icg' && (
+                            <Grid item xs={12}>
+                                <TextField
+                                    fullWidth
+                                    size="small"
+                                    label="ICG Channel Source"
+                                    variant="outlined"
+                                    value={prototypes[activePrototype].source || prototypes[activePrototype].name}
+                                    InputProps={{ readOnly: true }}
+                                    helperText="Imported from IonChannelGenealogy"
+                                />
                             </Grid>
                         )}
                     </Grid>
