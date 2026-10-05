@@ -1,7 +1,6 @@
 import os
 import sys
 import socket
-import threading
 import webbrowser
 import argparse
 
@@ -23,7 +22,12 @@ def _version():
 def _open_browser(url):
     import time
     time.sleep(1.5)
-    webbrowser.open(url)
+    try:
+        opened = webbrowser.open(url)
+    except Exception:
+        opened = False
+    if not opened:
+        print(f'Could not open a browser automatically; open {url} yourself.')
 
 
 def _check_moose():
@@ -115,12 +119,12 @@ def main():
     from jardesigner._server import app, socketio
 
     if not args.no_browser:
-        browser_thread = threading.Thread(
-            target=_open_browser,
-            args=(url,),
-            daemon=True
-        )
-        browser_thread.start()
+        # Run as a gevent task on the main loop, not in a thread. _server
+        # monkey-patches subprocess, and gevent's subprocess fails outside
+        # the main thread ("child watchers are only available on the default
+        # loop"); webbrowser starts a subprocess on Linux (xdg-settings) and
+        # macOS (osascript).
+        socketio.start_background_task(_open_browser, url)
 
     print(f'JARDesigner is running at {url}')
     print('Press Ctrl+C to stop.')
