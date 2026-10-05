@@ -43,7 +43,7 @@ def get_metadata():
     """
     GET /neuromorpho/metadata?species=rat
     Returns brain regions, cell types, archives for the species.
-    Result is cached in data/neuromorpho/<safe_name>.json.
+    Result is cached in metadata/neuromorpho/<safe_name>.json.
     """
     species = request.args.get("species")
     if not species:
