@@ -228,6 +228,7 @@ export const useAppLogic = () => {
     }, []);
     
     const activeSimRef = useRef(activeSim);
+    const dataChannelRef = useRef(null);
     useEffect(() => { activeSimRef.current = activeSim; }, [activeSim]);
     
     // --- SOCKET LOGIC ---
@@ -258,7 +259,15 @@ export const useAppLogic = () => {
             }
         };
 
-        socket.on('connect', () => socket.emit('register_client', { clientId, sessionToken: sessionTokenRef.current }));
+        socket.on('connect', () => {
+            socket.emit('register_client', { clientId, sessionToken: sessionTokenRef.current });
+            // A build may have been launched before the socket connected (a
+            // tutorial opened in a new tab builds on mount), or the socket may
+            // have reconnected; either way, subscribe to the current channel.
+            if (dataChannelRef.current) {
+                socket.emit('join_sim_channel', { data_channel_id: dataChannelRef.current });
+            }
+        });
         socket.on('session_token', (data) => { sessionTokenRef.current = data.token ?? ''; });
 
         socket.on('simulation_data', (data) => {
@@ -356,6 +365,7 @@ export const useAppLogic = () => {
         handleRewindReplay();
         try {
             const newDataChannelId = uuidv4();
+            dataChannelRef.current = newDataChannelId;
             if (socketRef.current?.connected) {
                 socketRef.current.emit('join_sim_channel', { data_channel_id: newDataChannelId });
             }

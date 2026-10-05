@@ -125,6 +125,34 @@ def run_simulation(model, timeout=180):
         sio.disconnect()
 
 
+def check_late_join(model):
+    """A browser tab that opens a tutorial launches the build before its
+    socket has joined the data channel. It must still get the scene."""
+    client_id = 'smoke-late-' + uuid.uuid4().hex[:8]
+    channel = str(uuid.uuid4())
+    r = requests.post(BASE + '/launch_simulation', timeout=30, json={
+        'config_data': model, 'client_id': client_id, 'data_channel_id': channel})
+    check(r.status_code == 200, 'launch before joining the channel')
+    time.sleep(15)  # build finishes and scene_init is pushed to an empty room
+    got = []
+    sio = socketio.Client()
+
+    @sio.on('simulation_data')
+    def _data(data):
+        got.append(data.get('type') if isinstance(data, dict) else None)
+
+    sio.connect(BASE, transports=['websocket'])
+    try:
+        sio.emit('register_client', {'clientId': client_id})
+        sio.emit('join_sim_channel', {'data_channel_id': channel})
+        deadline = time.time() + 30
+        while 'scene_init' not in got and time.time() < deadline:
+            time.sleep(0.5)
+        check('scene_init' in got, 'late joiner receives the built scene')
+    finally:
+        sio.disconnect()
+
+
 def main():
     exe = shutil.which('jardesigner')
     check(exe is not None, f'jardesigner command on PATH ({exe})')
@@ -171,6 +199,9 @@ def main():
         graphs = [d.get('reactionGraph') for e, d in events
                   if e == 'simulation_data' and d.get('type') == 'scene_init']
         check(any(g and g.get('objects') for g in graphs), 'reaction graph laid out')
+
+        print('Late channel join (tutorial opened in a new tab):')
+        check_late_join(CHEM_MODEL)
     finally:
         proc.terminate()
         try:
