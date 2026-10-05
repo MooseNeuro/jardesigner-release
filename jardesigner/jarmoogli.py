@@ -27,6 +27,26 @@ _INTERNAL_TOKEN = os.environ.get('JARDESIGNER_INTERNAL_TOKEN', '')
 http_session = requests.Session()
 http_session.headers.update({'X-Internal-Token': _INTERNAL_TOKEN})
 
+
+def _post_essential(requestBody, what, attempts=3, timeout=30.0):
+    """POST a message the browser cannot do without (scene_init, sim_end).
+
+    These are sent once, so a single short-timeout attempt that fails on a
+    busy server leaves the UI waiting forever. Retry, and if it still fails
+    print an 'Error:' line, which the server reports to the browser.
+    """
+    for attempt in range(1, attempts + 1):
+        try:
+            requests.post(FLASK_SERVER_URL, json=requestBody,
+                          headers={'X-Internal-Token': _INTERNAL_TOKEN},
+                          timeout=timeout)
+            return True
+        except Exception as e:
+            last = e
+    print(f"Error: could not send {what} to the jardesigner server "
+          f"after {attempts} attempts: {last}")
+    return False
+
 knownFieldInfo = {
     'Vm': {'fieldScale': 1000, 'dataUnits': 'mV', 
         'dataType': 'Memb. Potential', 'vmin':-80.0, 'vmax':40.0 },
@@ -635,12 +655,7 @@ class MooView:
         if self.standalone:
             self.standaloneSceneGraph = payload['scene']
         else:
-            try:
-                requests.post(FLASK_SERVER_URL, json=requestBody,
-                              headers={'X-Internal-Token': _INTERNAL_TOKEN}, timeout=2.0)
-                #print( "Sent Scene Graph: \n", requestBody )
-            except Exception as e:
-                print(f"FATAL ERROR: Could not send initial scene graph to server. {e}")
+            _post_essential(requestBody, "the model scene")
     
 
     def notifySimulationEnd( self, dataChannelId ):
@@ -662,15 +677,10 @@ class MooView:
             except Exception as e:
                 print(f"Warning: Could not send simulation frame batch. {e}")
             self._pendingFrames = []
-        try:
-            requests.post(FLASK_SERVER_URL,
-                          json={"data_channel_id": dataChannelId,
-                                "payload": {"type": "sim_end",
-                                            "message": "Simulation has finished."}},
-                          headers={'X-Internal-Token': _INTERNAL_TOKEN},
-                          timeout=2.0)
-        except Exception as e:
-            print(f"Warning: Could not send simulation end notification. {e}")
+        _post_essential({"data_channel_id": dataChannelId,
+                         "payload": {"type": "sim_end",
+                                     "message": "Simulation has finished."}},
+                        "the end-of-simulation notice")
 
 
 
