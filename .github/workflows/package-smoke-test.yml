@@ -44,7 +44,9 @@ jobs:
           python -m pip install dist/jardesigner-*.whl "python-socketio[client]" websocket-client
 
       - name: Check MOOSE loads
-        run: python -c "import moose; print('moose', moose.__version__)"
+        # Through the jardesigner package, as at runtime: it imports numpy
+        # first, which pymoose 5.0.0 needs under conda on macOS.
+        run: python -c "import jardesigner, moose; print('moose', moose.__version__)"
 
       - name: Smoke test
         env:
@@ -77,7 +79,9 @@ jobs:
           python -m pip install dist/jardesigner-*.whl "python-socketio[client]" websocket-client
 
       - name: Check MOOSE loads
-        run: python -c "import moose; print('moose', moose.__version__)"
+        # Through the jardesigner package, as at runtime: it imports numpy
+        # first, which pymoose 5.0.0 needs under conda on macOS.
+        run: python -c "import jardesigner, moose; print('moose', moose.__version__)"
 
       - name: Smoke test
         env:
