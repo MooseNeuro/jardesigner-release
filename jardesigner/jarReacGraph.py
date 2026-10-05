@@ -1,6 +1,7 @@
 import os
 import json
 import re
+import shutil
 import subprocess
 import moose
 from collections import defaultdict, OrderedDict
@@ -89,6 +90,36 @@ def unique(list1):
     return output
 
 # --- 3. MAIN GRAPH GENERATION ---
+
+def _layout_dot(dot_content):
+    """Lay out a DOT graph with Graphviz and return the -Tjson output.
+
+    pygraphviz wheels bundle the Graphviz libraries on Linux, macOS and
+    Windows, so a plain pip install needs nothing else. A system `dot`
+    executable is the fallback, e.g. on a Python version that has no
+    pygraphviz wheel. Returns None if neither is available.
+    """
+    try:
+        import pygraphviz
+    except ImportError:
+        pygraphviz = None
+    if pygraphviz is not None:
+        out = pygraphviz.AGraph(string=dot_content).draw(format='json', prog='dot')
+        return out.decode('utf-8') if isinstance(out, bytes) else out
+
+    if shutil.which('dot') is None:
+        # Deliberately not prefixed "Error:", which the server reports to the
+        # user as a simulation failure. The model runs fine without the graph.
+        print("Warning: Graphviz not found (install pygraphviz); "
+              "reaction graph will not be shown.")
+        return None
+    process = subprocess.run(['dot', '-Tjson'], input=dot_content,
+                             capture_output=True, text=True, encoding='utf-8')
+    if process.returncode != 0:
+        print(f"Graphviz Error: {process.stderr}")
+        return None
+    return process.stdout
+
 
 def get_reaction_graph(model_root, view_options=None):
     print(f"--- GraphGen: Starting generation for root: {model_root} ---")
@@ -374,20 +405,10 @@ def get_reaction_graph(model_root, view_options=None):
     # print(dot_content)
 
     try:
-        process = subprocess.Popen(
-            ['dot', '-Tjson'], 
-            stdin=subprocess.PIPE, 
-            stdout=subprocess.PIPE, 
-            stderr=subprocess.PIPE,
-            text=True
-        )
-        stdout, stderr = process.communicate(input=dot_content)
-        
-        if process.returncode != 0:
-            print(f"Graphviz Error: {stderr}")
+        layout_text = _layout_dot(dot_content)
+        if layout_text is None:
             return None
-            
-        layout_json = json.loads(stdout)
+        layout_json = json.loads(layout_text)
         
         # Inject metadata
         for obj in layout_json.get('objects', []):
