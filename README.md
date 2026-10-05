@@ -59,7 +59,31 @@ Jardesigner connects directly to two major neuroscience databases:
 - **Reaction Graph** - visualization of the loaded chemical reaction network
 - **Simulation Plots** - plots of all recorded quantities against time
 
-## Installation & Running Locally
+## Quick Install (Recommended)
+
+Install JARDesigner via pip — no cloning required.
+
+### Prerequisites
+
+Install [Miniconda](https://docs.conda.io/en/latest/miniconda.html).
+
+### Windows / Linux / macOS
+
+```bash
+conda create -n moose-jar python=3.13 gsl hdf5 numpy vpython matplotlib graphviz -c conda-forge
+conda activate moose-jar
+pip install jardesigner
+jardesigner
+```
+
+JARDesigner will open automatically in your browser at `http://localhost:5000`.
+
+> **Note:** On Linux/WSL, open your browser manually at `http://localhost:5000` after running `jardesigner --no-browser`.
+
+---
+
+## Installation & Running Locally (For Developers)
+
 
 Jardesigner requires two terminals running simultaneously - one for the backend and one for the frontend.
 
