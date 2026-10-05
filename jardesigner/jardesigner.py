@@ -48,7 +48,8 @@ _sim_flags = {
     'last_status_wallclock': 0.0,
     'data_channel_id': None,
 }
-_STATUS_URL   = "http://127.0.0.1:5000/internal/push_data"
+_SERVER_URL   = os.environ.get('JARDESIGNER_SERVER_URL', 'http://127.0.0.1:5000')
+_STATUS_URL   = f"{_SERVER_URL}/internal/push_data"
 _STATUS_TOKEN = os.environ.get('JARDESIGNER_INTERNAL_TOKEN', '')
 
 def _stdin_reader():
@@ -340,7 +341,7 @@ class JarDesigner:
                 print(f"Plot file '{plotFile}' should be json or svg or png.")
                 quit()
         self.plotFile = plotFile
-        with open(schemaFile_path) as f:
+        with open(schemaFile_path, encoding='utf-8') as f:
             try:
                 schema = json.load(f)
             except json.JSONDecodeError as e:
@@ -348,7 +349,7 @@ class JarDesigner:
                 print( e )
                 quit()
         if jsonFile:
-            with open(jsonFile) as f:
+            with open(jsonFile, encoding='utf-8') as f:
                 try:
                     data = json.load(f)
                 except:
@@ -1609,7 +1610,7 @@ print( "Wall Clock Time = {:8.2f}, simtime = {:8.3f}".format( time.time() - _sta
                     "val": [(vv.vector*pp[3]).tolist() for vv in vtab]
                 } 
             )
-        with open(plotFile, 'w') as f:
+        with open(plotFile, 'w', encoding='utf-8') as f:
             json.dump(payload, f)
 
     def display( self, startIndex = 0, block=True ):

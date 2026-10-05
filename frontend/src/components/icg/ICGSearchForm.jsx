@@ -4,6 +4,7 @@ import {
     Box, Button, Autocomplete, TextField,
     CircularProgress, TablePagination, Typography,
 } from '@mui/material';
+import { API_BASE_URL } from '../../config.js';
 
 const DEFAULT_PAGE_SIZE = 20;
 const PAGE_SIZE_OPTIONS = [20, 50, 100];
@@ -28,7 +29,7 @@ const toItem = (row) => ({
     cites:       row.cites,
 });
 
-export default function ICGSearchForm({ onResults, footerEl, baseUrl = 'http://localhost:5000' }) {
+export default function ICGSearchForm({ onResults, footerEl, baseUrl = API_BASE_URL }) {
     const [opts, setOpts]             = useState({ ion_classes: [], suffixes: [], suffixes_by_class: {}, years: [] });
     const [metaLoading, setMetaLoading] = useState(false);
     const [loading, setLoading]       = useState(false);

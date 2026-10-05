@@ -15,8 +15,11 @@ import os
 import sys
 import importlib.resources
 
-# Define the URL for the internal server endpoint
-FLASK_SERVER_URL = "http://127.0.0.1:5000/internal/push_data"
+# Define the URL for the internal server endpoint. The jardesigner command
+# sets JARDESIGNER_SERVER_URL to match its --host/--port; the default is
+# the standalone backend on port 5000.
+_SERVER_URL = os.environ.get('JARDESIGNER_SERVER_URL', 'http://127.0.0.1:5000')
+FLASK_SERVER_URL = f"{_SERVER_URL}/internal/push_data"
 
 _INTERNAL_TOKEN = os.environ.get('JARDESIGNER_INTERNAL_TOKEN', '')
 
@@ -699,7 +702,7 @@ class MooView:
             absoluteOutputPath = os.path.join(os.getcwd(), outputPath)
 
             # 1. Read the HTML template file
-            with open(absoluteTemplatePath, 'r') as f:
+            with open(absoluteTemplatePath, 'r', encoding='utf-8') as f:
                 templateContent = f.read()
             '''
 
@@ -718,7 +721,7 @@ class MooView:
             )
 
             # 4. Save the new, data-filled HTML file
-            with open(absoluteOutputPath, 'w') as f:
+            with open(absoluteOutputPath, 'w', encoding='utf-8') as f:
                 f.write(content)
 
             print(f"Generated standalone view at: {absoluteOutputPath}")

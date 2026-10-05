@@ -4,6 +4,7 @@ import {
     Box, Button, Autocomplete, TextField,
     CircularProgress, TablePagination, Typography,
 } from '@mui/material';
+import { API_BASE_URL } from '../../config.js';
 
 function layerSortKey(l) {
     if (l.includes('/')) {
@@ -30,7 +31,7 @@ const toItem = (s) => ({
     staged_filename: `ab_${s.specimen__id}`,
 });
 
-export default function AllenBrainSearchForm({ onResults, footerEl, baseUrl = 'http://localhost:5000' }) {
+export default function AllenBrainSearchForm({ onResults, footerEl, baseUrl = API_BASE_URL }) {
     // Search bar state
     const [species, setSpecies]     = useState(null);
     const [area, setArea]           = useState(null);

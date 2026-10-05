@@ -13,6 +13,7 @@ import UploadFileIcon from '@mui/icons-material/UploadFile';
 import NeuromorphoSearchForm from './neuromorpho/NeuromorphoSearchForm';
 import AllenBrainSearchForm from './allenbrain/AllenBrainSearchForm';
 import ICGSearchForm from './icg/ICGSearchForm';
+import { API_BASE_URL } from '../config.js';
 
 // Keyed by proto type then DB name.
 // SearchForm: component receiving { onResults, baseUrl } — renders the search form,
@@ -235,7 +236,7 @@ const ProtoPickerDialog = ({ open, onClose, onSelect, type, title, clientId }) =
     const [footerEl, setFooterEl] = useState(null);
     const uploadInputRef = useRef(null);
 
-    const baseUrl = `http://${window.location.hostname}:5000`;
+    const baseUrl = API_BASE_URL;
 
     useEffect(() => {
         if (!open || !type) return;

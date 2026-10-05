@@ -1,0 +1,89 @@
+name: Package smoke test
+
+# Build the wheel, install it into a clean environment on each OS, and run
+# tests/smoke_test.py against the installed `jardesigner` command.
+
+on:
+  push:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  conda:
+    # The install route documented in README.md, on every OS.
+    name: conda / ${{ matrix.os }} / Python ${{ matrix.python }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        # macos-14 is Apple silicon. Intel macOS is not listed because
+        # pymoose publishes no x86_64 macOS wheels.
+        os: [ubuntu-latest, macos-14, windows-latest]
+        python: ['3.12', '3.13']
+    timeout-minutes: 40
+    defaults:
+      run:
+        shell: bash -el {0}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: conda-incubator/setup-miniconda@v3
+        with:
+          activate-environment: moose-jar
+          python-version: ${{ matrix.python }}
+          channels: conda-forge
+          conda-remove-defaults: 'true'
+
+      - name: Create environment (as in README)
+        run: conda install -y gsl=2.8 hdf5=2.2.0 numpy vpython matplotlib graphviz
+
+      - name: Build and install wheel
+        run: |
+          python -m pip wheel . --no-deps -w dist
+          python -m pip install dist/jardesigner-*.whl "python-socketio[client]" websocket-client
+
+      - name: Check MOOSE loads
+        # Through the jardesigner package, as at runtime: it imports numpy
+        # first, which pymoose 5.0.0 needs under conda on macOS.
+        run: python -c "import jardesigner, moose; print('moose', moose.__version__)"
+
+      - name: Smoke test
+        env:
+          PYTHONUNBUFFERED: '1'
+        run: python tests/smoke_test.py
+
+  pip:
+    # Plain pip in a venv. Not run on Windows: the pymoose 5.0.0 Windows
+    # wheels do not bundle their GSL/HDF5 DLLs, so MOOSE cannot load there
+    # outside a conda environment that provides them.
+    name: pip / ${{ matrix.os }} / Python ${{ matrix.python }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-14]
+        python: ['3.10', '3.13']
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+
+      - name: Build and install wheel
+        shell: bash
+        run: |
+          python -m pip wheel . --no-deps -w dist
+          python -m pip install dist/jardesigner-*.whl "python-socketio[client]" websocket-client
+
+      - name: Check MOOSE loads
+        # Through the jardesigner package, as at runtime: it imports numpy
+        # first, which pymoose 5.0.0 needs under conda on macOS.
+        run: python -c "import jardesigner, moose; print('moose', moose.__version__)"
+
+      - name: Smoke test
+        env:
+          PYTHONUNBUFFERED: '1'
+        run: python tests/smoke_test.py
