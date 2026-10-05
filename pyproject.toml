@@ -36,3 +36,15 @@ jardesigner = "jardesigner._app:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["jardesigner"]
+
+[tool.hatch.build.targets.sdist]
+# Hatchling reads only the root .gitignore, so without this list the sdist
+# picked up frontend/node_modules (54k files, platform-specific binaries)
+# and the duplicate backend/ tree. The package, including the prebuilt UI
+# in jardesigner/static, is all that is needed to build the wheel.
+include = [
+    "/jardesigner",
+    "/tests",
+    "/README.md",
+    "/LICENSE",
+]
