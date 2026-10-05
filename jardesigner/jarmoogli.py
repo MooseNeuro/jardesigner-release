@@ -702,7 +702,7 @@ class MooView:
             absoluteOutputPath = os.path.join(os.getcwd(), outputPath)
 
             # 1. Read the HTML template file
-            with open(absoluteTemplatePath, 'r') as f:
+            with open(absoluteTemplatePath, 'r', encoding='utf-8') as f:
                 templateContent = f.read()
             '''
 
@@ -721,7 +721,7 @@ class MooView:
             )
 
             # 4. Save the new, data-filled HTML file
-            with open(absoluteOutputPath, 'w') as f:
+            with open(absoluteOutputPath, 'w', encoding='utf-8') as f:
                 f.write(content)
 
             print(f"Generated standalone view at: {absoluteOutputPath}")

@@ -229,19 +229,22 @@ PROTO_REGISTRY_DIR = os.path.join(BASE_DIR, 'proto_registry')
 _ALLOWED_STAGING_DIRS = {'CELL_MODELS', 'CHEM_MODELS', 'CHAN_MODELS'}
 
 
-_NM_ITEM_CACHE = os.path.join(BASE_DIR, 'data', 'neuromorpho', 'item_cache.json')
+# Written at runtime, so it lives in the per-user data dir (the same one
+# neuromorpho_routes uses), not inside the possibly read-only install.
+_NM_ITEM_CACHE = os.path.join(platformdirs.user_data_dir('jardesigner'), 'data', 'neuromorpho', 'item_cache.json')
 
 def _nm_cache_load():
     if os.path.exists(_NM_ITEM_CACHE):
         try:
-            return json.loads(open(_NM_ITEM_CACHE).read())
+            with open(_NM_ITEM_CACHE, encoding='utf-8') as f:
+                return json.load(f)
         except Exception:
             return {}
     return {}
 
 def _nm_cache_save(cache):
     os.makedirs(os.path.dirname(_NM_ITEM_CACHE), exist_ok=True)
-    with open(_NM_ITEM_CACHE, 'w') as f:
+    with open(_NM_ITEM_CACHE, 'w', encoding='utf-8') as f:
         json.dump(cache, f, indent=2)
 
 
@@ -454,10 +457,13 @@ def launch_simulation():
     try:
         env = os.environ.copy()
         if 'PYTHONPATH' in env:
-            env['PYTHONPATH'] = f"{BASE_DIR}:{env['PYTHONPATH']}"
+            env['PYTHONPATH'] = BASE_DIR + os.pathsep + env['PYTHONPATH']
         else:
             env['PYTHONPATH'] = BASE_DIR
         env['JARDESIGNER_INTERNAL_TOKEN'] = _INTERNAL_SECRET
+        # The worker's output is read as text below; pin both ends to
+        # UTF-8 so Windows does not fall back to the ANSI code page.
+        env['PYTHONIOENCODING'] = 'utf-8'
         
         #print(f"DEBUG: Launching subprocess for client {client_id} with channel {data_channel_id}")
         
@@ -467,8 +473,10 @@ def launch_simulation():
             stdin=subprocess.PIPE, 
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE, 
-            text=True, 
-            bufsize=1, 
+            text=True,
+            encoding='utf-8',
+            errors='replace',
+            bufsize=1,
             env=env
         )
 
@@ -537,7 +545,7 @@ def _get_newest_jardesigner_json(session_dir):
             continue
         fpath = os.path.join(session_dir, fname)
         try:
-            with open(fpath, 'r') as f:
+            with open(fpath, 'r', encoding='utf-8') as f:
                 parsed = json.load(f)
             if parsed.get('filetype') == 'jardesigner':
                 m = re.search(r'(\d+)\.json$', fname)
@@ -645,7 +653,7 @@ def upload_project(client_id):
     json_content = None
     if os.path.isfile(preferred_path):
         try:
-            with open(preferred_path, 'r') as f:
+            with open(preferred_path, 'r', encoding='utf-8') as f:
                 text = f.read()
             if json.loads(text).get('filetype') == 'jardesigner':
                 json_content = text
@@ -655,7 +663,7 @@ def upload_project(client_id):
     if json_content is None:
         json_path, _ = _get_newest_jardesigner_json(session_dir)
         if json_path:
-            with open(json_path, 'r') as f:
+            with open(json_path, 'r', encoding='utf-8') as f:
                 json_content = f.read()
 
     if json_content is None:
@@ -672,7 +680,7 @@ def list_examples():
     index_path = os.path.join(EXAMPLES_DIR, 'index.json')
     if not os.path.isfile(index_path):
         return jsonify([])
-    with open(index_path, 'r') as f:
+    with open(index_path, 'r', encoding='utf-8') as f:
         return jsonify(json.load(f))
 
 
@@ -702,7 +710,7 @@ def load_example(client_id, name):
     preferred_path = os.path.join(session_dir, safe_name + '.json')
     if os.path.isfile(preferred_path):
         try:
-            with open(preferred_path, 'r') as f:
+            with open(preferred_path, 'r', encoding='utf-8') as f:
                 text = f.read()
             if json.loads(text).get('filetype') == 'jardesigner':
                 json_content = text
@@ -710,7 +718,7 @@ def load_example(client_id, name):
             pass
 
     if json_content is None:
-        with open(json_path, 'r') as f:
+        with open(json_path, 'r', encoding='utf-8') as f:
             json_content = f.read()
 
     return jsonify({'status': 'success', 'json': json_content})
