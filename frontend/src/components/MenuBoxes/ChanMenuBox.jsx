@@ -5,7 +5,7 @@ import {
     Tab,
     Typography,
     TextField,
-    Grid,
+    Grid2 as Grid,
     IconButton,
     MenuItem,
     Button,
@@ -355,7 +355,7 @@ const ChanMenuBox = ({
     }, [flushRef, getElecData]);
 
     return (
-        <Box sx={{ p: 2, background: '#f5f5f5', borderRadius: 2 }}>
+        <Box sx={{ p: 2, bgcolor: 'background.paper' }}>
             <input 
                 type="file" 
                 ref={fileInputRef} 
@@ -382,19 +382,19 @@ const ChanMenuBox = ({
                 </Button>
             </Box>
             <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-                <Tabs value={activePrototype} onChange={(e, nv) => setActivePrototype(nv)} sx={{ '& .MuiTabs-scroller': { overflow: 'visible !important' }, '& .MuiTabs-flexContainer': { flexWrap: 'wrap' } }} aria-label="Channel Prototypes">
+                <Tabs value={activePrototype} onChange={(e, nv) => setActivePrototype(nv)} variant="scrollable" scrollButtons="auto" allowScrollButtonsMobile aria-label="Channel Prototypes">
                     {prototypes.map((p, i) => <Tab key={i} label={p.name || `Proto ${i + 1}`} />)}
                 </Tabs>
             </Box>
             {prototypes[activePrototype] && (
-                <Box sx={{ mt: 2, p: 2, border: '1px solid #e0e0e0', borderRadius: '4px' }}>
+                <Box sx={{ mt: 2, p: 2, border: '1px solid', borderColor: 'divider', borderRadius: '8px' }}>
                     <Grid container spacing={2} alignItems="center">
-                        <Grid item xs={12}>
+                        <Grid size={12}>
                             <HelpField id="name" label="Prototype Name" value={prototypes[activePrototype].name} onChange={(id,v) => setCustomPrototypeName(activePrototype, v)} helptext={helpText.prototypes.name} required />
                         </Grid>
                         
                         {prototypes[activePrototype].type === 'File' && (
-                           <Grid item xs={12}>
+                           <Grid size={12}>
                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1 }}>
                                     <TextField
                                         fullWidth
@@ -422,7 +422,7 @@ const ChanMenuBox = ({
                             </Grid>
                         )}
                         {prototypes[activePrototype].type === 'icg' && (
-                            <Grid item xs={12}>
+                            <Grid size={12}>
                                 <TextField
                                     fullWidth
                                     size="small"
@@ -435,7 +435,7 @@ const ChanMenuBox = ({
                             </Grid>
                         )}
                     </Grid>
-                    <Button variant="outlined" color="secondary" startIcon={<DeleteIcon />} onClick={() => removePrototype(activePrototype)} sx={{ mt: 2 }}>
+                    <Button variant="outlined" color="error" startIcon={<DeleteIcon />} onClick={() => removePrototype(activePrototype)} sx={{ mt: 2 }}>
                         Remove '{prototypes[activePrototype].name}'
                     </Button>
                 </Box>
@@ -453,16 +453,16 @@ const ChanMenuBox = ({
                 </Alert>
             )}
             <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-                 <Tabs value={activeDistribution} onChange={(e, nv) => setActiveDistribution(nv)} sx={{ '& .MuiTabs-scroller': { overflow: 'visible !important' }, '& .MuiTabs-flexContainer': { flexWrap: 'wrap' } }} aria-label="Channel Distributions">
+                 <Tabs value={activeDistribution} onChange={(e, nv) => setActiveDistribution(nv)} variant="scrollable" scrollButtons="auto" allowScrollButtonsMobile aria-label="Channel Distributions">
                      {distributions.map((d, i) => <Tab key={i} label={`${d.prototype || 'New'} @ ${d.path || '?'}`} />)}
                      <IconButton onClick={addDistribution} sx={{ alignSelf: 'center', ml: '10px' }}><AddIcon /></IconButton>
                  </Tabs>
             </Box>
             {distributions[activeDistribution] && (
-                 <Box sx={{ mt: 2, p: 2, border: '1px solid #e0e0e0', borderRadius: '4px' }}>
+                 <Box sx={{ mt: 2, p: 2, border: '1px solid', borderColor: 'divider', borderRadius: '8px' }}>
                      <Grid container spacing={2}>
                         {/* 1. Moved Path to first position, full width, and made into a Menu */}
-                        <Grid item xs={12}>
+                        <Grid size={12}>
                              <HelpField 
                                 id="path" 
                                 label="Parent Elec Compartment" 
@@ -482,7 +482,7 @@ const ChanMenuBox = ({
                              </HelpField>
                         </Grid>
 
-                        <Grid item xs={12} sm={6}>
+                        <Grid size={{ xs: 12, sm: 6 }}>
                              <HelpField id="prototype" label="Prototype" select required
                                  error={!distributions[activeDistribution].prototype}
                                  helperText={!distributions[activeDistribution].prototype ? 'Select a prototype' : undefined}
@@ -494,7 +494,7 @@ const ChanMenuBox = ({
                                 {prototypes.filter(p => p.name).map((p) => <MenuItem key={p.name} value={p.name}>{p.name}</MenuItem>)}
                             </HelpField>
                          </Grid>
-                         <Grid item xs={12} sm={6}>
+                         <Grid size={{ xs: 12, sm: 6 }}>
                              {prototypes.find(p => p.name === distributions[activeDistribution].prototype)?.type === 'Ca_conc' ? (
                                  <ExprHelpField id="caTau" label="Ca Tau (s)" required
                                      value={distributions[activeDistribution].caTau}
@@ -512,7 +512,7 @@ const ChanMenuBox = ({
                              )}
                         </Grid>
                     </Grid>
-                    <Button variant="outlined" color="secondary" startIcon={<DeleteIcon />} onClick={() => removeDistribution(activeDistribution)} sx={{ mt: 2 }}>
+                    <Button variant="outlined" color="error" startIcon={<DeleteIcon />} onClick={() => removeDistribution(activeDistribution)} sx={{ mt: 2 }}>
                          Remove Distribution
                      </Button>
                 </Box>
@@ -544,8 +544,8 @@ const ChanMenuBox = ({
                     />
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={() => setCustomPathDialogOpen(false)}>Cancel</Button>
-                    <Button onClick={handleSaveCustomPath}>Set Path</Button>
+                    <Button variant="text" onClick={() => setCustomPathDialogOpen(false)}>Cancel</Button>
+                    <Button variant="contained" onClick={handleSaveCustomPath}>Set Path</Button>
                 </DialogActions>
             </Dialog>
         </Box>
