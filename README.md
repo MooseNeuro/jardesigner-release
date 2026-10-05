@@ -70,7 +70,7 @@ Install [Miniconda](https://docs.conda.io/en/latest/miniconda.html).
 ### Windows / Linux / macOS
 
 ```bash
-conda create -n moose-jar python=3.13 gsl=2.8 hdf5 numpy vpython matplotlib graphviz -c conda-forge
+conda create -n moose-jar python=3.13 gsl=2.8 hdf5=2.2.0 numpy vpython matplotlib graphviz -c conda-forge
 conda activate moose-jar
 pip install jardesigner
 jardesigner

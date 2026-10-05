@@ -43,7 +43,7 @@ def _check_moose():
                 'and HDF5 libraries they need. Until a fixed pymoose is released,',
                 'install jardesigner in a conda environment that provides them:',
                 '',
-                '    conda create -n jardesigner -c conda-forge python=3.12 gsl=2.8 hdf5',
+                '    conda create -n jardesigner -c conda-forge python=3.12 gsl=2.8 hdf5=2.2.0',
                 '    conda activate jardesigner',
                 '    pip install jardesigner',
             ]
