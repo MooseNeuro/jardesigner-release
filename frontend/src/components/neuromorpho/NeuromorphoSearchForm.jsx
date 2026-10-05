@@ -4,6 +4,7 @@ import {
     Box, Button, Autocomplete, TextField,
     CircularProgress, TablePagination, Typography,
 } from '@mui/material';
+import { API_BASE_URL } from '../../config.js';
 
 const PRIORITY_SPECIES = ['rat', 'mouse'];
 
@@ -42,7 +43,7 @@ const toItem = (n) => ({
     } : {}),
 });
 
-export default function NeuromorphoSearchForm({ onResults, footerEl, baseUrl = 'http://localhost:5000' }) {
+export default function NeuromorphoSearchForm({ onResults, footerEl, baseUrl = API_BASE_URL }) {
     // Search bar state
     const [species, setSpecies]           = useState(null);
     const [brainRegion, setBrainRegion]   = useState(null);

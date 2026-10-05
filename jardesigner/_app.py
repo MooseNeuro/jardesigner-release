@@ -1,3 +1,4 @@
+import os
 import sys
 import threading
 import webbrowser
@@ -30,6 +31,11 @@ def main():
         help='Start the server without opening the browser'
     )
     args = parser.parse_args()
+
+    # Simulation subprocesses inherit this and use it to push results back
+    # to this server. A wildcard bind address is reachable on loopback.
+    internal_host = '127.0.0.1' if args.host in ('0.0.0.0', '::', '') else args.host
+    os.environ['JARDESIGNER_SERVER_URL'] = f'http://{internal_host}:{args.port}'
 
     from jardesigner._server import app, socketio
 

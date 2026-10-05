@@ -3,6 +3,7 @@ import { io } from "socket.io-client";
 import { v4 as uuidv4 } from 'uuid';
 import isEqual from 'lodash/isEqual';
 import { useReplayLogic } from './replayLogic';
+import { API_BASE_URL } from './config.js';
 
 // ... (Keep initialJsonData and helper functions exactly as they are) ...
 const initialJsonData = {
@@ -48,7 +49,6 @@ const initialJsonData = {
 };
 
 const requiredKeys = ["filetype", "version"];
-const API_BASE_URL = `http://${window.location.hostname}:5000`;
 const VIEW_IDS = { SETUP: 'setup', RUN: 'run' };
 
 // ... (Keep compactJsonData and isSameSelection helpers) ...
@@ -237,7 +237,9 @@ export const useAppLogic = () => {
             return;
         }
 
-        const socket = io(API_BASE_URL, { path: '/socket.io', transports: ['websocket'] });
+        const socket = API_BASE_URL
+            ? io(API_BASE_URL, { path: '/socket.io', transports: ['websocket'] })
+            : io({ path: '/socket.io', transports: ['websocket'] });
         socketRef.current = socket;
 
         const onSimulationEnded = () => {

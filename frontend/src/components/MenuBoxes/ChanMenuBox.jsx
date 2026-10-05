@@ -16,6 +16,7 @@ import {
     DialogContent,
     DialogActions
 } from '@mui/material';
+import { API_BASE_URL } from '../../config.js';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
@@ -247,7 +248,7 @@ const ChanMenuBox = ({
         formData.append('clientId', clientId);
 
         try {
-            const uploadUrl = `http://${window.location.hostname}:5000/upload_file`;
+            const uploadUrl = `${API_BASE_URL}/upload_file`;
             const response = await fetch(uploadUrl, {
                 method: 'POST',
                 body: formData,

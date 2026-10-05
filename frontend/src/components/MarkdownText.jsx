@@ -5,8 +5,7 @@ import { Box, Typography, CircularProgress, Tabs, Tab, List, ListItem,
          ListItemText, ListItemSecondaryAction, Button, Chip, Stack, Alert } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { getThemeExtras } from '../theme.js';
-
-const API_BASE_URL = `http://${window.location.hostname}:5000`;
+import { API_BASE_URL } from '../config.js';
 
 // Derived from the theme's iframe token group so injected iframe CSS stays in
 // sync with the app's dark surface (see theme.js getThemeExtras).

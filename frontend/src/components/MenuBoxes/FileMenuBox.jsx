@@ -18,8 +18,8 @@ import ExitToAppIcon from '@mui/icons-material/ExitToApp';
 // Importing logos
 import jardesLogo from '../../assets/jardes_logo.png';
 import mooseLogo from '../../assets/moose_logo.png';
+import { API_BASE_URL } from '../../config.js';
 
-const API_BASE_URL = `http://${window.location.hostname}:5000`;
 const MOOSE_VERSION = '4.2.0 "Kalakand"';
 
 const FileMenuBox = ({ setJsonContent, currentConfig, getCurrentJsonData, clientId, onMissingFilesWarned, updateJsonData }) => {

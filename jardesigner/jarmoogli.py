@@ -15,8 +15,11 @@ import os
 import sys
 import importlib.resources
 
-# Define the URL for the internal server endpoint
-FLASK_SERVER_URL = "http://127.0.0.1:5000/internal/push_data"
+# Define the URL for the internal server endpoint. The jardesigner command
+# sets JARDESIGNER_SERVER_URL to match its --host/--port; the default is
+# the standalone backend on port 5000.
+_SERVER_URL = os.environ.get('JARDESIGNER_SERVER_URL', 'http://127.0.0.1:5000')
+FLASK_SERVER_URL = f"{_SERVER_URL}/internal/push_data"
 
 _INTERNAL_TOKEN = os.environ.get('JARDESIGNER_INTERNAL_TOKEN', '')
 

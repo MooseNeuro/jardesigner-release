@@ -48,7 +48,8 @@ _sim_flags = {
     'last_status_wallclock': 0.0,
     'data_channel_id': None,
 }
-_STATUS_URL   = "http://127.0.0.1:5000/internal/push_data"
+_SERVER_URL   = os.environ.get('JARDESIGNER_SERVER_URL', 'http://127.0.0.1:5000')
+_STATUS_URL   = f"{_SERVER_URL}/internal/push_data"
 _STATUS_TOKEN = os.environ.get('JARDESIGNER_INTERNAL_TOKEN', '')
 
 def _stdin_reader():
