@@ -689,7 +689,13 @@ def list_examples():
     if not os.path.isfile(index_path):
         return jsonify([])
     with open(index_path, 'r', encoding='utf-8') as f:
-        return jsonify(json.load(f))
+        entries = json.load(f)
+    # List only tutorials that can actually be loaded, so an index entry
+    # whose .jardes file is missing does not show up as a broken Load button.
+    return jsonify([
+        e for e in entries
+        if os.path.isfile(os.path.join(EXAMPLES_DIR, secure_filename(e.get('name', '')) + '.jardes'))
+    ])
 
 
 @app.route('/load_example/<client_id>/<name>', methods=['POST'])
