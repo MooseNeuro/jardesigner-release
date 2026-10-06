@@ -452,9 +452,6 @@ def launch_simulation():
     plot_filename = "plot.json"
     plot_filepath = os.path.abspath(os.path.join(session_dir, plot_filename))
     
-    current_dir = os.path.dirname(os.path.abspath(__file__))
-    launcher_path = os.path.join(BASE_DIR, '_launcher.py')
-
     worker_args = [
         config_file_path,
         "--plotFile", plot_filepath, 
@@ -463,30 +460,13 @@ def launch_simulation():
     ]
     
     try:
-        env = os.environ.copy()
-        if 'PYTHONPATH' in env:
-            env['PYTHONPATH'] = BASE_DIR + os.pathsep + env['PYTHONPATH']
+        process = _take_spare_worker()
+        if process is not None:
+            process.stdin.write(json.dumps(worker_args) + '\n')
+            process.stdin.flush()
         else:
-            env['PYTHONPATH'] = BASE_DIR
-        env['JARDESIGNER_INTERNAL_TOKEN'] = _INTERNAL_SECRET
-        # The worker's output is read as text below; pin both ends to
-        # UTF-8 so Windows does not fall back to the ANSI code page.
-        env['PYTHONIOENCODING'] = 'utf-8'
-        
-        #print(f"DEBUG: Launching subprocess for client {client_id} with channel {data_channel_id}")
-        
-        process = subprocess.Popen(
-            [sys.executable, '-m', 'jardesigner._launcher'] + worker_args,
-            cwd=os.path.dirname(BASE_DIR), 
-            stdin=subprocess.PIPE, 
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE, 
-            text=True,
-            encoding='utf-8',
-            errors='replace',
-            bufsize=1,
-            env=env
-        )
+            process = _spawn_worker(worker_args)
+        socketio.start_background_task(_ensure_spare_worker)
 
         running_processes[process.pid] = {
             "process": process, "plot_filename": plot_filename,
@@ -512,6 +492,51 @@ def launch_simulation():
         "status": "success", "pid": process.pid,
         "plot_filename": plot_filename, "data_channel_id": data_channel_id
     }), 200
+
+def _spawn_worker(worker_args):
+    env = os.environ.copy()
+    if 'PYTHONPATH' in env:
+        env['PYTHONPATH'] = BASE_DIR + os.pathsep + env['PYTHONPATH']
+    else:
+        env['PYTHONPATH'] = BASE_DIR
+    env['JARDESIGNER_INTERNAL_TOKEN'] = _INTERNAL_SECRET
+    # The worker's output is read as text; pin both ends to UTF-8 so
+    # Windows does not fall back to the ANSI code page.
+    env['PYTHONIOENCODING'] = 'utf-8'
+    return subprocess.Popen(
+        [sys.executable, '-m', 'jardesigner._launcher'] + worker_args,
+        cwd=os.path.dirname(BASE_DIR),
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+        encoding='utf-8',
+        errors='replace',
+        bufsize=1,
+        env=env
+    )
+
+
+# One worker started ahead of time. Most of a worker's start-up is importing
+# moose, numpy, matplotlib etc. (several seconds, more on Windows); a spare
+# that has already done that lets the next build start immediately. Each
+# simulation still gets its own fresh process.
+_spare_worker = None
+
+
+def _ensure_spare_worker():
+    global _spare_worker
+    if _spare_worker is None or _spare_worker.poll() is not None:
+        _spare_worker = _spawn_worker(['--wait'])
+
+
+def _take_spare_worker():
+    global _spare_worker
+    worker, _spare_worker = _spare_worker, None
+    if worker is not None and worker.poll() is None:
+        return worker
+    return None
+
 
 @app.route('/download_project/<client_id>', methods=['GET'])
 def download_project(client_id):
@@ -782,6 +807,7 @@ def handle_register_client(data):
     client_owner_map[client_id] = (request.sid, session_token)
     sock_emit('session_token', {'token': session_token})
     print(f"Registered client {client_id} to SID {request.sid}")
+    socketio.start_background_task(_ensure_spare_worker)
 
 @socketio.on('disconnect')
 def handle_disconnect():
