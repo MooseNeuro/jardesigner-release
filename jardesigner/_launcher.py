@@ -1,14 +1,16 @@
+import json
 import sys
-import os
-
-# Ensure the current directory is in the path so we can import 'jardesigner'
-# sys.path.append(os.getcwd())
-
-# Import the main function from your backend module
-# This uses the standard import mechanism, avoiding the "double load"
-#from jardesigner.jardesigner import main 
 
 if __name__ == "__main__":
+    # Importing this pulls in moose, numpy, matplotlib, jsonschema etc.,
+    # which is most of a worker's start-up time.
     from jardesigner.jardesigner import main
-    sys.exit(main())
 
+    if sys.argv[1:] == ["--wait"]:
+        # Started ahead of time by the server: wait here, already imported,
+        # until the run's arguments arrive as one JSON line on stdin.
+        line = sys.stdin.readline()
+        if not line:
+            sys.exit(0)  # the server exited without using this worker
+        sys.argv[1:] = json.loads(line)
+    sys.exit(main())

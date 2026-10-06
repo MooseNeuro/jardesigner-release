@@ -1,6 +1,8 @@
 import os
 import sys
 import socket
+import platform
+import subprocess
 import webbrowser
 import argparse
 
@@ -19,11 +21,31 @@ def _version():
         return 'unknown (not installed)'
 
 
+def _is_wsl():
+    return sys.platform.startswith('linux') and 'microsoft' in platform.release().lower()
+
+
 def _open_browser(url):
     import time
     time.sleep(1.5)
     try:
-        opened = webbrowser.open(url)
+        if os.environ.get('BROWSER'):
+            # An explicit choice by the user always wins.
+            opened = webbrowser.open(url)
+        elif _is_wsl():
+            # Use the Windows default browser. webbrowser would find no Linux
+            # GUI browser here and start a text browser (w3m, lynx) in the
+            # terminal that is running the server.
+            subprocess.Popen(['explorer.exe', url],
+                             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            opened = True
+        elif sys.platform.startswith('linux') and not (
+                os.environ.get('DISPLAY') or os.environ.get('WAYLAND_DISPLAY')):
+            # No graphical session (e.g. over SSH): the only browsers
+            # webbrowser could start are text browsers in this terminal.
+            opened = False
+        else:
+            opened = webbrowser.open(url)
     except Exception:
         opened = False
     if not opened:
