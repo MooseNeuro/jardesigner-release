@@ -100,9 +100,17 @@ def stream_printer(stream, pid, stream_name, emit_error_fn=None):
         print(f"Error in stream printer for PID {pid} ({stream_name}): {e}")
 
 
+# Latest scene_init payload per data channel and view ('setup'/'run'). The
+# worker sends it once, right after building the model; a browser whose
+# socket joins the channel after that (e.g. a tutorial opened in a new tab
+# that is still connecting) would otherwise never receive it and wait forever.
+_scene_init_cache = {}
+
+
 def terminate_process(pid):
     """Safely terminates a running process and cleans up its entry."""
     if pid in running_processes:
+        _scene_init_cache.pop(running_processes[pid].get("data_channel_id"), None)
         try:
             proc_info = running_processes[pid]
             if proc_info["process"].poll() is None:
@@ -681,7 +689,13 @@ def list_examples():
     if not os.path.isfile(index_path):
         return jsonify([])
     with open(index_path, 'r', encoding='utf-8') as f:
-        return jsonify(json.load(f))
+        entries = json.load(f)
+    # List only tutorials that can actually be loaded, so an index entry
+    # whose .jardes file is missing does not show up as a broken Load button.
+    return jsonify([
+        e for e in entries
+        if os.path.isfile(os.path.join(EXAMPLES_DIR, secure_filename(e.get('name', '')) + '.jardes'))
+    ])
 
 
 @app.route('/load_example/<client_id>/<name>', methods=['POST'])
@@ -737,6 +751,9 @@ def push_data():
     if not channel_id or payload is None:
         return jsonify({"status": "error", "message": "Missing data_channel_id or payload"}), 400
 
+    if isinstance(payload, dict) and payload.get('type') == 'scene_init':
+        _scene_init_cache.setdefault(channel_id, {})[payload.get('viewId')] = payload
+
     # Send data without printing (quiet mode)
     socketio.emit('simulation_data', payload, room=channel_id)
     return jsonify({"status": "success"}), 200
@@ -790,6 +807,9 @@ def handle_join_sim_channel(data):
     if not channel_id: return
     join_room(channel_id)
     print(f"DEBUG: Client {request.sid} JOINED channel: {channel_id}")
+    # Catch up a client that joined after the model was built.
+    for payload in _scene_init_cache.get(channel_id, {}).values():
+        sock_emit('simulation_data', payload)
 
 @app.route('/simulation_status/<int:pid>', methods=['GET'])
 def simulation_status(pid):
